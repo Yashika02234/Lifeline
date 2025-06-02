@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from 'react';
@@ -10,6 +11,7 @@ import EmergencyRequestButton from '@/components/dashboard/emergency-request-but
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 
 export default function DashboardPage() {
   const [selectedBloodType, setSelectedBloodType] = useState<BloodType | 'all'>('all');
