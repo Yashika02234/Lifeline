@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Phone, KeyRound, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
@@ -26,8 +28,27 @@ function AuthForm() {
     }
   }, [authLoading, user, router]);
 
-  if (authLoading || (!authLoading && user)) { // Simplified condition to avoid rendering form if auth is loading or user exists
-    return null;
+  if (authLoading || (!authLoading && user)) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-10rem)] py-12">
+        <Card className="w-full max-w-md shadow-xl">
+          <CardHeader className="text-center">
+            <Skeleton className="h-7 w-3/5 mx-auto" /> {/* Mimics CardTitle */}
+            <Skeleton className="h-4 w-4/5 mx-auto mt-2" /> {/* Mimics CardDescription */}
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-1/3" /> {/* Mimics Label */}
+              <Skeleton className="h-10 w-full" /> {/* Mimics Input */}
+            </div>
+            <Skeleton className="h-10 w-full mt-6" /> {/* Mimics Button */}
+          </CardContent>
+          <CardFooter className="flex justify-center pt-4">
+             <Skeleton className="h-5 w-1/2" /> {/* Mimics Footer link */}
+          </CardFooter>
+        </Card>
+      </div>
+    );
   }
 
 
