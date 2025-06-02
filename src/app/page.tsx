@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthProvider, useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function AuthGate() {
@@ -33,9 +33,5 @@ function AuthGate() {
 }
 
 export default function HomePage() {
-  return (
-    <AuthProvider>
-      <AuthGate />
-    </AuthProvider>
-  );
+  return <AuthGate />;
 }

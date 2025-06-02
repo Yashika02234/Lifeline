@@ -1,5 +1,5 @@
 "use client";
-import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,9 +29,5 @@ function ProtectedRouteLayout({ children }: { children: React.ReactNode }) {
 
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <AuthProvider>
-      <ProtectedRouteLayout>{children}</ProtectedRouteLayout>
-    </AuthProvider>
-  );
+  return <ProtectedRouteLayout>{children}</ProtectedRouteLayout>;
 }

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Phone, KeyRound, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { AuthProvider, useAuth } from '@/hooks/use-auth'; // Import AuthProvider
+import { useAuth } from '@/hooks/use-auth';
 
 function AuthForm() {
   const [step, setStep] = useState(1); // 1 for phone, 2 for OTP
@@ -20,8 +20,13 @@ function AuthForm() {
   const { login, user, loading: authLoading } = useAuth();
 
   // Redirect if user is already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace('/dashboard');
+    }
+  }, [authLoading, user, router]);
+
   if (!authLoading && user) {
-    router.replace('/dashboard');
     return null; 
   }
 
@@ -130,9 +135,5 @@ function AuthForm() {
 
 
 export default function AuthPage() {
-  return (
-    <AuthProvider>
-      <AuthForm />
-    </AuthProvider>
-  );
+  return <AuthForm />;
 }
