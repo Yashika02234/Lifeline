@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,8 +26,8 @@ function AuthForm() {
     }
   }, [authLoading, user, router]);
 
-  if (!authLoading && user) {
-    return null; 
+  if (authLoading || (!authLoading && user)) { // Simplified condition to avoid rendering form if auth is loading or user exists
+    return null;
   }
 
 
@@ -78,13 +78,13 @@ function AuthForm() {
                 <Label htmlFor="phone" className="font-semibold">Phone Number</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input 
-                    id="phone" 
-                    type="tel" 
-                    placeholder="e.g. 9876543210" 
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="e.g. 9876543210"
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
-                    required 
+                    required
                     className="pl-10"
                     aria-label="Phone Number"
                   />
@@ -101,13 +101,13 @@ function AuthForm() {
                 <Label htmlFor="otp" className="font-semibold">OTP</Label>
                  <div className="relative">
                   <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input 
-                    id="otp" 
-                    type="text" 
-                    placeholder="Enter 6-digit OTP" 
+                  <Input
+                    id="otp"
+                    type="text"
+                    placeholder="Enter 6-digit OTP"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    required 
+                    required
                     maxLength={6}
                     className="pl-10 tracking-widest text-center"
                     aria-label="One-Time Password"
