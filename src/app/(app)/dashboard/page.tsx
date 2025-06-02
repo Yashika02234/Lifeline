@@ -5,8 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import type { Donor, BloodType } from '@/types';
 import { mockDonors } from '@/lib/mock-data';
 import DonorCard from '@/components/dashboard/donor-card';
-import BloodTypeFilter from '@/components/dashboard/blood-type-filter';
-import DistanceFilter from '@/components/dashboard/distance-filter';
+import UnifiedFilterBar from '@/components/dashboard/unified-filter-bar';
 import DonorMap from '@/components/dashboard/donor-map';
 import EmergencyRequestButton from '@/components/dashboard/emergency-request-button';
 import AiChatAssistant from '@/components/dashboard/ai-chat-assistant';
@@ -70,11 +69,9 @@ export default function DashboardPage() {
     <div className="flex flex-col lg:flex-row gap-6 h-full">
       {/* Left Panel: Filters and Donor List */}
       <div className="lg:w-1/3 xl:w-1/4 flex flex-col gap-4">
-        <BloodTypeFilter
+        <UnifiedFilterBar
           selectedBloodType={selectedBloodType}
           onBloodTypeChange={setSelectedBloodType}
-        />
-        <DistanceFilter
           selectedDistance={selectedDistance}
           onDistanceChange={setSelectedDistance}
         />
