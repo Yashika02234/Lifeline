@@ -8,6 +8,7 @@ import DonorCard from '@/components/dashboard/donor-card';
 import BloodTypeFilter from '@/components/dashboard/blood-type-filter';
 import DonorMap from '@/components/dashboard/donor-map';
 import EmergencyRequestButton from '@/components/dashboard/emergency-request-button';
+import AiChatAssistant from '@/components/dashboard/ai-chat-assistant';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
@@ -34,7 +35,6 @@ export default function DashboardPage() {
   }, [donors, selectedBloodType]);
 
   // For map centering, attempt to use user's location or default
-  // This is a placeholder; actual geolocation would require browser API & permissions
   const [mapCenter, setMapCenter] = useState({ lat: 28.6139, lng: 77.2090 }); // Default to Delhi
 
   useEffect(() => {
@@ -94,7 +94,8 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-headline font-semibold">Donor Locations</h2>
         <DonorMap donors={filteredDonors} center={mapCenter} />
         <Separator className="my-4 lg:hidden" />
-        <div className="mt-auto pt-4 lg:pt-0">
+        <div className="mt-auto pt-4 lg:pt-0 flex flex-col md:flex-row md:items-center md:justify-end gap-4">
+          <AiChatAssistant currentBloodTypeFilter={selectedBloodType} />
           <EmergencyRequestButton />
         </div>
       </div>
