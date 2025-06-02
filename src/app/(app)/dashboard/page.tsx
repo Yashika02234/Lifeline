@@ -6,6 +6,7 @@ import type { Donor, BloodType } from '@/types';
 import { mockDonors } from '@/lib/mock-data';
 import DonorCard from '@/components/dashboard/donor-card';
 import BloodTypeFilter from '@/components/dashboard/blood-type-filter';
+import DistanceFilter from '@/components/dashboard/distance-filter';
 import DonorMap from '@/components/dashboard/donor-map';
 import EmergencyRequestButton from '@/components/dashboard/emergency-request-button';
 import AiChatAssistant from '@/components/dashboard/ai-chat-assistant';
@@ -16,6 +17,7 @@ import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
 
 export default function DashboardPage() {
   const [selectedBloodType, setSelectedBloodType] = useState<BloodType | 'all'>('all');
+  const [selectedDistance, setSelectedDistance] = useState<string>('all'); // 'all', '5', '10', '25', '50'
   const [donors, setDonors] = useState<Donor[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,11 +30,21 @@ export default function DashboardPage() {
   }, []);
 
   const filteredDonors = useMemo(() => {
-    if (selectedBloodType === 'all') {
-      return donors;
+    let tempDonors = donors;
+
+    // Filter by blood type
+    if (selectedBloodType !== 'all') {
+      tempDonors = tempDonors.filter(donor => donor.bloodType === selectedBloodType);
     }
-    return donors.filter(donor => donor.bloodType === selectedBloodType);
-  }, [donors, selectedBloodType]);
+
+    // Filter by distance
+    if (selectedDistance !== 'all') {
+      const maxDistance = parseInt(selectedDistance, 10);
+      tempDonors = tempDonors.filter(donor => donor.distanceKm !== undefined && donor.distanceKm <= maxDistance);
+    }
+
+    return tempDonors;
+  }, [donors, selectedBloodType, selectedDistance]);
 
   // For map centering, attempt to use user's location or default
   const [mapCenter, setMapCenter] = useState({ lat: 28.6139, lng: 77.2090 }); // Default to Delhi
@@ -62,7 +74,11 @@ export default function DashboardPage() {
           selectedBloodType={selectedBloodType}
           onBloodTypeChange={setSelectedBloodType}
         />
-        <ScrollArea className="h-[calc(100vh-20rem)] lg:h-[calc(100vh-18rem)] border rounded-lg shadow-sm bg-card p-1">
+        <DistanceFilter
+          selectedDistance={selectedDistance}
+          onDistanceChange={setSelectedDistance}
+        />
+        <ScrollArea className="h-[calc(100vh-25rem)] lg:h-[calc(100vh-22rem)] border rounded-lg shadow-sm bg-card p-1">
           <div className="p-3 space-y-4">
           {loading ? (
             Array.from({ length: 3 }).map((_, index) => (
