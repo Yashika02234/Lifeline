@@ -30,7 +30,7 @@ const DonorSchema: Schema<IDonor> = new Schema(
       type: String,
       required: [true, 'Please provide a phone number.'],
       match: [/^\d{10}$/, 'Phone number must be 10 digits.'],
-      // Consider adding unique: true if phone numbers should be unique
+      unique: true, // Ensure phone numbers are unique
     },
     bloodType: {
       type: String,

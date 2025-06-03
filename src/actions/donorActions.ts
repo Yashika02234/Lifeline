@@ -1,17 +1,17 @@
 
 'use server';
 
-import type * as z from "zod";
+import * as z from "zod";
 import dbConnect from '@/lib/dbConnect';
 import Donor from '@/models/Donor';
-import type { BloodType } from "@/types";
+import { type BloodType, ALL_BLOOD_TYPES } from "@/types"; // Import ALL_BLOOD_TYPES
 
 // This schema should ideally match or be derived from your form's Zod schema
 // For now, we'll define it based on expected form values.
 const donorFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   phoneNumber: z.string().regex(/^\d{10}$/, { message: "Must be a 10-digit phone number." }),
-  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as [BloodType, ...BloodType[]], { required_error: "Please select a blood type." }),
+  bloodType: z.enum(ALL_BLOOD_TYPES as [BloodType, ...BloodType[]], { required_error: "Please select a blood type." }), // Use ALL_BLOOD_TYPES
   medicalHistory: z.string().max(500, { message: "Medical history summary must be under 500 characters." }).optional(),
   lastDonationDate: z.date().optional(),
 });
