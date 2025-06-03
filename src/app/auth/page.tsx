@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Phone, KeyRound, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
+import { handlePhoneNumberSubmit, verifyOtpAndGetUser } from '@/actions/authActions'; // Import server actions
 
 function AuthForm() {
   const [step, setStep] = useState(1); // 1 for phone, 2 for OTP
@@ -19,7 +20,7 @@ function AuthForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const { login, user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, setCurrentUser } = useAuth();
 
   // Redirect if user is already logged in
   useEffect(() => {
@@ -51,35 +52,32 @@ function AuthForm() {
     );
   }
 
-
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const onSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!/^\d{10}$/.test(phoneNumber)) {
-      toast({ title: "Invalid Phone Number", description: "Please enter a 10-digit phone number.", variant: "destructive" });
-      return;
-    }
     setIsLoading(true);
-    // Simulate OTP sending
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const result = await handlePhoneNumberSubmit(phoneNumber);
     setIsLoading(false);
-    setStep(2);
-    toast({ title: "OTP Sent", description: `An OTP has been sent to ${phoneNumber}. (Hint: use 123456)` });
+
+    if (result.success) {
+      setStep(2);
+      toast({ title: "OTP Sent", description: result.message });
+    } else {
+      toast({ title: "Error", description: result.message || "Failed to send OTP.", variant: "destructive" });
+    }
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
+  const onVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (otp.length < 4) { // Basic OTP length check
-        toast({ title: "Invalid OTP", description: "Please enter a valid OTP.", variant: "destructive" });
-        return;
-    }
     setIsLoading(true);
-    const success = await login(phoneNumber, otp);
+    const result = await verifyOtpAndGetUser(phoneNumber, otp);
     setIsLoading(false);
-    if (success) {
-      toast({ title: "Verification Successful", description: "Welcome to Lifeline!" });
+
+    if (result.success && result.user) {
+      setCurrentUser(result.user); // Set user in client-side auth context
+      toast({ title: "Verification Successful", description: result.message || "Welcome to Lifeline!" });
       router.replace('/dashboard');
     } else {
-      toast({ title: "Verification Failed", description: "Invalid OTP. Please try again.", variant: "destructive" });
+      toast({ title: "Verification Failed", description: result.message || "Invalid OTP or server error.", variant: "destructive" });
     }
   };
 
@@ -94,7 +92,7 @@ function AuthForm() {
         </CardHeader>
         <CardContent>
           {step === 1 ? (
-            <form onSubmit={handleSendOtp} className="space-y-6">
+            <form onSubmit={onSendOtp} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="phone" className="font-semibold">Phone Number</Label>
                 <div className="relative">
@@ -117,7 +115,7 @@ function AuthForm() {
               </Button>
             </form>
           ) : (
-            <form onSubmit={handleVerifyOtp} className="space-y-6">
+            <form onSubmit={onVerifyOtp} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="otp" className="font-semibold">OTP</Label>
                  <div className="relative">
@@ -129,7 +127,7 @@ function AuthForm() {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     required
-                    maxLength={6}
+                    maxLength={6} // Assuming a 6-digit OTP for consistency, though our mock is '123456'
                     className="pl-10 tracking-widest text-center"
                     aria-label="One-Time Password"
                   />
@@ -137,7 +135,7 @@ function AuthForm() {
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Verify OTP
+                Verify OTP & Login
               </Button>
             </form>
           )}
@@ -153,7 +151,6 @@ function AuthForm() {
     </div>
   );
 }
-
 
 export default function AuthPage() {
   return <AuthForm />;

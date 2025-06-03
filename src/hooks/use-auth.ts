@@ -1,6 +1,7 @@
+
 "use client";
 
-import type { User } from '@/types';
+import type { User } from '@/types'; // This is our client-side User type
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -9,22 +10,23 @@ const USER_STORAGE_KEY = 'lifeline_user';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (phoneNumber: string, otp: string) => Promise<boolean>;
+  setCurrentUser: (userData: User | null) => void; // To be called by AuthForm after server verification
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUserState] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
+    setLoading(true);
     try {
       const storedUser = localStorage.getItem(USER_STORAGE_KEY);
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        setUserState(JSON.parse(storedUser));
       }
     } catch (error) {
       console.error("Failed to parse user from localStorage", error);
@@ -34,33 +36,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = useCallback(async (phoneNumber: string, otp: string): Promise<boolean> => {
-    // Mock OTP verification
-    // In a real app, this would involve an API call
+  const setCurrentUser = useCallback((userData: User | null) => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
-    if (otp === "123456") { // Hardcoded OTP for demo
-      const newUser: User = { id: Date.now().toString(), phoneNumber };
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
-      setUser(newUser);
-      setLoading(false);
-      return true;
+    if (userData) {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+      setUserState(userData);
+    } else {
+      localStorage.removeItem(USER_STORAGE_KEY);
+      setUserState(null);
     }
     setLoading(false);
-    return false;
   }, []);
+
 
   const logout = useCallback(async () => {
     setLoading(true);
     await new Promise(resolve => setTimeout(resolve, 300)); // Simulate API delay
-    localStorage.removeItem(USER_STORAGE_KEY);
-    setUser(null);
+    setCurrentUser(null); // This will clear localStorage and state
     setLoading(false);
     router.push('/auth'); // Redirect to auth page on logout
-  }, [router]);
+  }, [router, setCurrentUser]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, setCurrentUser, logout }}>
       {children}
     </AuthContext.Provider>
   );
