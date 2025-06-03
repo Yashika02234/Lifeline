@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,12 +18,13 @@ import { ALL_BLOOD_TYPES, type BloodType } from '@/types';
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { registerDonor } from "@/actions/donorActions"; // Import the server action
 
 const donorFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   phoneNumber: z.string().regex(/^\d{10}$/, { message: "Must be a 10-digit phone number." }),
   bloodType: z.enum(ALL_BLOOD_TYPES, { required_error: "Please select a blood type." }),
-  medicalHistory: z.string().max(500, { message: "Medical history summary must be under 500 characters." }).optional(),
+  medicalHistory: z.string().max(500, { message: "Medical history summary must be under 500 characters." }).optional().default(""),
   lastDonationDate: z.date().optional(),
 });
 
@@ -44,15 +46,31 @@ export default function DonorRegistrationForm() {
 
   async function onSubmit(data: DonorFormValues) {
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log("Donor Registration Data:", data);
-    toast({
-      title: "Registration Submitted!",
-      description: "Thank you for registering as a blood donor. Your information has been saved.",
-    });
-    form.reset();
-    setIsSubmitting(false);
+    try {
+      const result = await registerDonor(data); // Call the server action
+      if (result.success) {
+        toast({
+          title: "Registration Submitted!",
+          description: result.message || "Thank you for registering as a blood donor. Your information has been saved.",
+        });
+        form.reset();
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: result.message || "Could not register donor. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Form submission error:", error);
+      toast({
+        title: "An Error Occurred",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -79,8 +97,11 @@ export default function DonorRegistrationForm() {
             <FormItem>
               <FormLabel>Phone Number</FormLabel>
               <FormControl>
-                <Input type="tel" placeholder="e.g. 9876543210" {...field} />
+                <Input type="tel" placeholder="e.g. 9876543210" {...field} readOnly={!!user?.phoneNumber} />
               </FormControl>
+              <FormDescription>
+                {user?.phoneNumber ? "Phone number is pre-filled from your login." : "Enter your 10-digit phone number."}
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
