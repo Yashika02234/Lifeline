@@ -2,7 +2,7 @@
 "use client";
 
 import type { User } from '@/types';
-import { useState, useEffect, useCallback, createContext, useContext, type ReactNode } from 'react';
+import React, { useState, useEffect, useCallback, createContext, useContext, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
 const USER_STORAGE_KEY = 'lifeline_user_v2';
@@ -20,7 +20,8 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export function AuthProvider({ children }: AuthProviderProps) {
+// Explicitly typing AuthProvider as a React Functional Component
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUserState] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -35,14 +36,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (parsedUser && typeof parsedUser.id === 'string' && typeof parsedUser.phoneNumber === 'string') {
           setUserState(parsedUser);
         } else {
-          // Invalid or incomplete user data found, clear it
+          // Invalid user structure, remove from storage
           localStorage.removeItem(USER_STORAGE_KEY);
           setUserState(null);
         }
+      } else {
+        setUserState(null); // Ensure user is null if nothing is in storage
       }
     } catch (error) {
       console.error("Error reading user from localStorage:", error);
-      // Error parsing JSON, clear potentially corrupted data
+      // Clear potentially corrupted data
       localStorage.removeItem(USER_STORAGE_KEY);
       setUserState(null);
     } finally {
@@ -51,30 +54,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const setCurrentUser = useCallback((userData: User | null) => {
-    setLoading(true);
+    setLoading(true); // Indicate loading state during user update
     if (userData && typeof userData.id === 'string' && typeof userData.phoneNumber === 'string') {
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
       setUserState(userData);
     } else if (userData === null) {
+      // Explicitly handling null to clear user
       localStorage.removeItem(USER_STORAGE_KEY);
       setUserState(null);
     } else {
-      // Attempted to set invalid user data
+      // Handle potentially invalid, non-null userData that doesn't meet criteria
       console.warn("Attempted to set invalid user data:", userData);
-      localStorage.removeItem(USER_STORAGE_KEY);
+      localStorage.removeItem(USER_STORAGE_KEY); // Ensure storage is clean
       setUserState(null);
     }
     setLoading(false);
   }, []);
 
   const logout = useCallback(async () => {
-    setLoading(true); 
-    setCurrentUser(null); 
-    // setLoading(false) will be called by setCurrentUser
-    // Forcing redirect if desired, though ProtectedRouteLayout/AuthGate should handle it:
-    router.replace('/auth'); 
+    setLoading(true);
+    setCurrentUser(null); // This will remove from localStorage and update state
+    // Ensure navigation happens after state update and potential re-renders:
+    // Using a microtask (Promise.resolve().then()) or a minimal setTimeout
+    // can help ensure state updates propagate before navigation.
+    await Promise.resolve(); 
+    router.replace('/auth');
+    // setLoading(false); // setLoading(false) in setCurrentUser handles this
   }, [router, setCurrentUser]);
 
+  // Define the context value object
   const authContextValue: AuthContextType = {
     user,
     loading,
@@ -87,7 +95,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
