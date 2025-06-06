@@ -14,11 +14,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon, UserPlus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { ALL_BLOOD_TYPES, type BloodType } from '@/types';
+import { ALL_BLOOD_TYPES } from '@/types'; // Removed BloodType as it's inferred
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { registerDonor } from "@/actions/donorActions"; // Import the server action
+
+// The server action import is removed: import { registerDonor } from "@/actions/donorActions"; 
 
 const donorFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -46,26 +47,21 @@ export default function DonorRegistrationForm() {
 
   async function onSubmit(data: DonorFormValues) {
     setIsSubmitting(true);
+    console.log("Donor registration data (mock submission):", data);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000)); 
     try {
-      const result = await registerDonor(data); // Call the server action
-      if (result.success) {
-        toast({
-          title: "Registration Submitted!",
-          description: result.message || "Thank you for registering as a blood donor. Your information has been saved.",
-        });
-        form.reset();
-      } else {
-        toast({
-          title: "Registration Failed",
-          description: result.message || "Could not register donor. Please try again.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Form submission error:", error);
+      // Mock success
       toast({
-        title: "An Error Occurred",
-        description: "Something went wrong. Please try again.",
+        title: "Registration Submitted! (Mock)",
+        description: "Thank you for registering as a blood donor. Your information has been logged to the console.",
+      });
+      form.reset();
+    } catch (error) {
+      console.error("Mock form submission error:", error);
+      toast({
+        title: "An Error Occurred (Mock)",
+        description: "Something went wrong during mock submission. Please try again.",
         variant: "destructive",
       });
     } finally {

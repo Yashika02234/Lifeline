@@ -2,7 +2,7 @@
 "use client";
 
 import type { User } from '@/types'; // This is our client-side User type
-import { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, Dispatch, SetStateAction } from 'react';
 import { useRouter } from 'next/navigation';
 
 const USER_STORAGE_KEY = 'lifeline_user';
@@ -10,7 +10,7 @@ const USER_STORAGE_KEY = 'lifeline_user';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  setCurrentUser: (userData: User | null) => void; // To be called by AuthForm after server verification
+  setCurrentUser: (userData: User | null) => void; 
   logout: () => Promise<void>;
 }
 

@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Phone, KeyRound, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { handlePhoneNumberSubmit, verifyOtpAndGetUser } from '@/actions/authActions'; // Import server actions
+import type { User } from '@/types'; // For mock user
 
 function AuthForm() {
   const [step, setStep] = useState(1); // 1 for phone, 2 for OTP
@@ -55,30 +55,39 @@ function AuthForm() {
   const onSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const result = await handlePhoneNumberSubmit(phoneNumber);
-    setIsLoading(false);
-
-    if (result.success) {
-      setStep(2);
-      toast({ title: "OTP Sent", description: result.message });
-    } else {
-      toast({ title: "Error", description: result.message || "Failed to send OTP.", variant: "destructive" });
+    // Simulate OTP sending
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phoneNumber)) {
+        toast({ title: "Error", description: "Invalid phone number format. Must be 10 digits.", variant: "destructive" });
+        setIsLoading(false);
+        return;
     }
+
+    console.log(`Simulating OTP sent to: ${phoneNumber}`);
+    setIsLoading(false);
+    setStep(2);
+    toast({ title: "OTP Sent", description: `OTP (mock) sent to ${phoneNumber}. Use 123456.` });
   };
 
   const onVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const result = await verifyOtpAndGetUser(phoneNumber, otp);
-    setIsLoading(false);
-
-    if (result.success && result.user) {
-      setCurrentUser(result.user); // Set user in client-side auth context
-      toast({ title: "Verification Successful", description: result.message || "Welcome to Lifeline!" });
+    // Simulate OTP verification
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    if (otp === "123456") {
+      const mockUser: User = {
+        id: new Date().getTime().toString(), // Simple unique ID for mock
+        phoneNumber: phoneNumber,
+      };
+      setCurrentUser(mockUser); // Set user in client-side auth context
+      toast({ title: "Verification Successful", description: "Welcome to Lifeline!" });
       router.replace('/dashboard');
     } else {
-      toast({ title: "Verification Failed", description: result.message || "Invalid OTP or server error.", variant: "destructive" });
+      toast({ title: "Verification Failed", description: "Invalid OTP. Please try again.", variant: "destructive" });
     }
+    setIsLoading(false);
   };
 
   return (
@@ -127,7 +136,7 @@ function AuthForm() {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     required
-                    maxLength={6} // Assuming a 6-digit OTP for consistency, though our mock is '123456'
+                    maxLength={6} 
                     className="pl-10 tracking-widest text-center"
                     aria-label="One-Time Password"
                   />
