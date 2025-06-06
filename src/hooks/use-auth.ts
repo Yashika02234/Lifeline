@@ -10,7 +10,7 @@ const USER_STORAGE_KEY = 'lifeline_user';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  setCurrentUser: (userData: User | null) => void; 
+  setCurrentUser: (userData: User | null) => void;
   logout: () => Promise<void>;
 }
 
@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("Failed to parse user from localStorage", error);
-      localStorage.removeItem(USER_STORAGE_KEY); 
+      localStorage.removeItem(USER_STORAGE_KEY);
     } finally {
       setLoading(false);
     }
