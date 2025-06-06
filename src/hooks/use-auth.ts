@@ -35,14 +35,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (parsedUser && typeof parsedUser.id === 'string' && typeof parsedUser.phoneNumber === 'string') {
           setUserState(parsedUser);
         } else {
-          console.warn("Invalid user data found in localStorage, removing.");
+          // Invalid or incomplete user data found, clear it
           localStorage.removeItem(USER_STORAGE_KEY);
+          setUserState(null);
         }
       }
     } catch (error) {
-      console.error("Failed to parse user from localStorage:", error);
-      // Clear potentially corrupted data
+      console.error("Error reading user from localStorage:", error);
+      // Error parsing JSON, clear potentially corrupted data
       localStorage.removeItem(USER_STORAGE_KEY);
+      setUserState(null);
     } finally {
       setLoading(false);
     }
@@ -54,12 +56,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
       setUserState(userData);
     } else if (userData === null) {
-      // Explicitly null means logout or clear user
       localStorage.removeItem(USER_STORAGE_KEY);
       setUserState(null);
     } else {
-      // Handle cases where userData is defined but invalid
-      console.warn("Attempted to set invalid user data, clearing user:", userData);
+      // Attempted to set invalid user data
+      console.warn("Attempted to set invalid user data:", userData);
       localStorage.removeItem(USER_STORAGE_KEY);
       setUserState(null);
     }
@@ -67,12 +68,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const logout = useCallback(async () => {
-    setLoading(true);
-    setCurrentUser(null); // This also handles localStorage removal and state update
-    // Using router.replace to avoid adding to history stack after logout
-    router.replace('/auth');
+    setLoading(true); 
+    setCurrentUser(null); 
+    // setLoading(false) will be called by setCurrentUser
+    // Forcing redirect if desired, though ProtectedRouteLayout/AuthGate should handle it:
+    router.replace('/auth'); 
   }, [router, setCurrentUser]);
-  
+
   const authContextValue: AuthContextType = {
     user,
     loading,
@@ -80,13 +82,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
   };
 
-  // Explicitly define the Provider component type and assign AuthContext.Provider to it
-  const ProviderComponent: React.FC<{ value: AuthContextType; children: ReactNode }> = AuthContext.Provider;
-
   return (
-    <ProviderComponent value={authContextValue}>
+    <AuthContext.Provider value={authContextValue}>
       {children}
-    </ProviderComponent>
+    </AuthContext.Provider>
   );
 }
 
